@@ -25,8 +25,6 @@
                         </Menu>
                         <MenuItem fx:id="_newMBR" mnemonicParsing="false" onAction="#createNewMBR" text="New..." />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" text="Open MBR Template" />
-                        <SeparatorMenuItem mnemonicParsing="false" />
                     <MenuItem mnemonicParsing="false" onAction="#closeApp" text="Close" />
                   </items>
                 </Menu>

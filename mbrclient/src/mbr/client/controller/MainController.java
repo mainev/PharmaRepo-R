@@ -42,7 +42,6 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
         setMenuButtonToggleGroup();
         addToggleGroupListener();
 
@@ -50,7 +49,6 @@ public class MainController implements Initializable {
 
     private void addToggleGroupListener() {
         _menuButtonMBR.setUserData(ScreenNavigator.MBR_LIST_SCREEN);
-       // _menuButtonMBREditor.setUserData(ScreenNavigator.MBR_EDITOR_SCREEN);
 
         menuToggleGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
             public void changed(ObservableValue<? extends Toggle> ov,
