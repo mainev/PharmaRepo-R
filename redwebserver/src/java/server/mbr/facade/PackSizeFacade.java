@@ -22,11 +22,29 @@ public class PackSizeFacade {
     private EntityManager em;
 
     public PackSize create(PackSize packSizeId) {
-        em.persist(packSizeId);
-        em.flush();
-        return em.find(PackSize.class, packSizeId.getId());
+        PackSize ps = findByPackSizeDetails(packSizeId);
+        if (ps != null) {
+            return ps;
+        } else {
+            em.persist(packSizeId);
+            em.flush();
+            return em.find(PackSize.class, packSizeId.getId());
+        }
     }
-    public List<PackSize> findAll(){
+
+    public List<PackSize> findAll() {
         return em.createQuery("Select p from PackSize p order by p.id desc").getResultList();
+    }
+
+    public PackSize findByPackSizeDetails(PackSize packSizeId) {
+        List<PackSize> list = em.createQuery("Select p from PackSize p where p.quantity = :quantity and p.containerId = :containerId and p.unitId = :unitId")
+                .setParameter("quantity", packSizeId.getQuantity())
+                .setParameter("containerId", packSizeId.getContainerId())
+                .setParameter("unitId", packSizeId.getUnitId())
+                .getResultList();
+        if (!list.isEmpty()) {
+            return list.get(0);
+        }
+        return null;
     }
 }

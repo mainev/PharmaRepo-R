@@ -8,6 +8,8 @@ package mbr.client.entity.mbr;
 import mbr.client.entity.main.Product;
 import java.io.Serializable;
 import java.util.Collection;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -23,7 +25,20 @@ public class ProductPackSize implements Serializable {
     private PackSize packSizeId;
     private Collection<PackagingProcedure> packagingProcedureCollection;
     private Collection<PackagingProcedureOperation> packagingProcedureOperationCollection;
+    //private ObservableList<PackagingProcedure> packagingProcedureList = FXCollections.observableArrayList();
 
+    public ProductPackSize(){
+    
+    }
+    
+    public ObservableList<PackagingProcedure> packagingProcedureListProperty(){
+        ObservableList<PackagingProcedure> list = FXCollections.observableArrayList();
+        
+        for(PackagingProcedure p: packagingProcedureCollection){
+            list.add(p);
+        }
+        return list;
+    }
     public Collection<PackagingProcedure> getPackagingProcedureCollection() {
         return packagingProcedureCollection;
     }
@@ -91,7 +106,7 @@ public class ProductPackSize implements Serializable {
 
     @Override
     public String toString() {
-        return "server.mbr.entity.ProductPackSize[ id=" + id + " ]";
+        return productId.getCode() + " : " + productId.getBrandName() + " - " + packSizeId.getQuantity() + " " + packSizeId.getUnitId() + " per " + packSizeId.getContainerId().getName();
     }
 
 }

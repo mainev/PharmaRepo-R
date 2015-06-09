@@ -23,6 +23,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -53,7 +54,6 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.view.JasperViewer;
 import org.controlsfx.dialog.Wizard;
-import org.controlsfx.dialog.Wizard.Flow;
 import org.controlsfx.dialog.Wizard.LinearFlow;
 import org.controlsfx.dialog.Wizard.WizardPane;
 
@@ -62,7 +62,7 @@ import org.controlsfx.dialog.Wizard.WizardPane;
  *
  * @author maine
  */
-public class NewController implements Initializable {
+public class NewController1bak implements Initializable {
 
     @FXML
     GridPane _gridPaneInput;
@@ -82,6 +82,8 @@ public class NewController implements Initializable {
     TextField _textFieldBatchSize;
     @FXML
     ChoiceBox<Unit> _choiceBoxBatchSizeUnit;
+    @FXML
+    ChoiceBox _packSizeCollectionChoiceBox;
     @FXML
     ComboBox<Unit> _packSizeUnitComboBox;
     @FXML
@@ -108,22 +110,60 @@ public class NewController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-
+        
         initBatchSizeUnitChoiceBox();
         initContainerChoiceBox();
         initPackSizeUnitComboBox();
+        initPackSizeCollectionComboBox();
         initTextFieldWithProductSearch();
 
+     //   enableAddNewPackSize(false);
     }
-/*
-    private void enableAddNewPackSize(boolean value) {
+
+    public void enablePackSizeCollectionChoiceBox() {
+        _packSizeCollectionChoiceBox.setDisable(false);
+
+    }
+
+    public void enableAddNewPackSize(boolean value) {
         _newPackSizeQtyTextField.setVisible(value);
         _newPackSizeContainerComboBox.setVisible(value);
         _packSizeUnitComboBox.setVisible(value);
         _cancelLabel.setVisible(value);
         _perLabel.setVisible(value);
     }
-*/
+
+    private void initPackSizeCollectionComboBox() {
+
+        _packSizeCollectionChoiceBox.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> {
+            if (nv != null) {
+                if (nv.equals(ADD_PACK_SIZE_OPTION)) {
+                    _cancelLabel.setVisible(true);
+                    _packSizeCollectionChoiceBox.setDisable(true);
+                }
+
+            } else {
+                _cancelLabel.setVisible(false);
+                _packSizeCollectionChoiceBox.setDisable(false);
+            }
+
+        });
+
+        _packSizeCollectionChoiceBox.disableProperty().addListener((ob, ov, nv) -> {
+
+            if (nv) {
+                enableAddNewPackSize(true);
+                _newPackSizeQtyTextField.requestFocus();
+                // showPackSizeWizard();
+            } else {
+                enableAddNewPackSize(false);
+                _packSizeCollectionChoiceBox.getSelectionModel().selectFirst();
+                _packSizeCollectionChoiceBox.requestFocus();
+            }
+        });
+
+    }
+
     private void initPackSizeUnitComboBox() {
         _packSizeUnitComboBox.setItems(unitService.getUnitList());
     }
@@ -141,6 +181,7 @@ public class NewController implements Initializable {
      * Assign product items that is searchable in the text field.
      */
     private void initTextFieldWithProductSearch() {
+        //   ObservableList<Product> productList = productService.getProductList();
         ObservableList<ProductPackSize> productPackSizeList = productPackSizeService.getProductPackSizeList();
 
         textFieldWithProductSearch = new TextFieldWithSearch(productPackSizeList);
@@ -151,23 +192,28 @@ public class NewController implements Initializable {
             if (nv != null) {
                 ProductPackSize temp = (ProductPackSize) nv;
                 selectedProduct = temp.getProductId();
-           //     enableAddNewPackSize(true);
+                enableAddNewPackSize(true);
                 updateAddNewPackSizeFields(temp);
-             }
+                //   _packSizeCollectionChoiceBox.getItems().addAll(selectedProduct.packSizeCollectionProperty());
+                //   _packSizeCollectionChoiceBox.getItems().add(new Separator());
+                _packSizeCollectionChoiceBox.getItems().addAll(packSizeService.getPackSizeList());
+                _packSizeCollectionChoiceBox.getItems().add(new Separator());
+                _packSizeCollectionChoiceBox.getItems().add(ADD_PACK_SIZE_OPTION);
+            }
 
         });
     }
-
-    private void updateAddNewPackSizeFields(ProductPackSize pp) {
-        _newPackSizeQtyTextField.setText(String.valueOf(pp.getPackSizeId().getQuantity()));
+   
+    private void updateAddNewPackSizeFields(ProductPackSize pp){
+    _newPackSizeQtyTextField.setText(String.valueOf(pp.getPackSizeId().getQuantity()));
         _newPackSizeContainerComboBox.setValue(pp.getPackSizeId().getContainerId());
-        _packSizeUnitComboBox.setValue(pp.getPackSizeId().getUnitId());
+         _packSizeUnitComboBox.setValue(pp.getPackSizeId().getUnitId());
     }
 
     @FXML
     private void handleAddButton() {
-        createMBRInstance();
-        //createMBRJasperReport(createMBRInstance());
+        //createMBRInstance();
+        createMBRJasperReport(createMBRInstance());
 
         Stage stage = (Stage) _gridPaneInput.getScene().getWindow();
         stage.close();
@@ -207,6 +253,9 @@ public class NewController implements Initializable {
         return rows;
     }
 
+//    private MBR calculateRequiredBatchRawMaterialRequirements(MBR mbr){
+//        
+//    }
     private MBR createMBRInstance() {
         String batchNo = _textFieldBatchNo.getText();
         Double batchSize = Double.parseDouble(_textFieldBatchSize.getText());
@@ -215,15 +264,24 @@ public class NewController implements Initializable {
         Date expDate = DateConverter.convertLocalDateToDate(_datePickerExpDate.getValue());
         String poNo = _textFieldPoNo.getText();
 
-        ProductPackSize productPackSizeId = productPackSizeService.createProductPackSize(selectedProduct, getPackSizeValue());
+        ProductPackSize productPackSizeId;
+        if (!_packSizeCollectionChoiceBox.disableProperty().getValue()) {
+            PackSize packSizeId = (PackSize) _packSizeCollectionChoiceBox.getValue();
+            productPackSizeId = productPackSizeService.getProductPackSize(selectedProduct, packSizeId);
+        } else {
+            productPackSizeId = productPackSizeService.createProductPackSize(selectedProduct, getNewPackSizeValue());
+
+        }
+
         return mbrService.createMBR(productPackSizeId, batchSize, batchNo, mfgDate, expDate,
                 poNo, unitId);
     }
 
-    public PackSize getPackSizeValue() {
+    public PackSize getNewPackSizeValue() {
         double packSizeQuantity = Double.parseDouble(_newPackSizeQtyTextField.getText());
         Container packSizeContainerId = _newPackSizeContainerComboBox.getValue();
         Unit packSizeUnit = _packSizeUnitComboBox.getValue();
+
         return packSizeService.createPackSize(packSizeQuantity, packSizeUnit, packSizeContainerId);
     }
 
@@ -231,14 +289,12 @@ public class NewController implements Initializable {
     private void handleCancelButton() {
         Stage stage = (Stage) _gridPaneInput.getScene().getWindow();
         stage.close();
-        
-        
     }
 
     private void showPackSizeWizard() {
         // define pages to show
         Wizard wizard = new Wizard();
-        wizard.setTitle("Create New MBR");
+        wizard.setTitle("Pack Size Wizard");
 
         // --- page 1
         int row = 0;
@@ -309,7 +365,7 @@ public class NewController implements Initializable {
 
         //packaging procedure (filling) editor
         TextArea packagingProcedureEditor = new TextArea();
-        // HTMLEditor packagingProcedureEditor = new HTMLEditor();
+       // HTMLEditor packagingProcedureEditor = new HTMLEditor();
 
         packagingProcedureEditor.setPrefSize(500, 300);
         page2BorderPane.setCenter(packagingProcedureEditor);

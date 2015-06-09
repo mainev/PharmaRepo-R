@@ -44,6 +44,13 @@ public class PackSizeService {
         return Serializer.<PackSize>deserializeList(jsonOutput, PackSize.class);
     }
 
+    /***
+     * Creates a new pack size in the database whenever the result is empty.
+     * @param quantity
+     * @param unitId
+     * @param containerId
+     * @return 
+     */
     public PackSize createPackSize(double quantity, Unit unitId, Container containerId) {
         PackSize packSizeId = new PackSize(quantity, unitId, containerId);
         String jsonInput = Serializer.serialize(packSizeId);

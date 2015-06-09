@@ -9,6 +9,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import javafx.collections.ObservableList;
 import mbr.client.entity.mbr.PackSize;
 import mbr.client.entity.main.Product;
 import mbr.client.entity.mbr.ProductPackSize;
@@ -36,15 +37,20 @@ public class ProductPackSizeService {
         client = Client.create(defaultClientConfig);
     }
 
+    public ObservableList<ProductPackSize> getProductPackSizeList() {
+        webResource = client.resource(BASE_URI);
+        ClientResponse response = webResource.accept("application/json").get(ClientResponse.class);
+        String jsonOutput = response.getEntity(String.class);
+        return Serializer.<ProductPackSize>deserializeList(jsonOutput, ProductPackSize.class);
+    }
+
     public ProductPackSize createProductPackSize(Product productId, PackSize packSizeId) {
         ProductPackSize productPackSizeId = new ProductPackSize(productId, packSizeId);
-         String jsonInput = Serializer.serialize(productPackSizeId);
-         webResource = client.resource(BASE_URI + "/create");
+        String jsonInput = Serializer.serialize(productPackSizeId);
+        webResource = client.resource(BASE_URI + "/create");
         ClientResponse response = webResource.type("application/json").post(ClientResponse.class, jsonInput);
         String jsonResult = response.getEntity(String.class);
         return Serializer.<ProductPackSize>deserialize(jsonResult, ProductPackSize.class);
-        
-       // return productPackSizeId;
     }
 
     public ProductPackSize getProductPackSize(Product productId, PackSize packSizeId) {
@@ -55,9 +61,9 @@ public class ProductPackSizeService {
                 .queryParam("pack_size_id", String.valueOf(packSizeId.getId()))
                 .accept("application/json")
                 .get(ClientResponse.class);
-        
+
         String jsonResult = response.getEntity(String.class);
         return Serializer.<ProductPackSize>deserialize(jsonResult, ProductPackSize.class);
-       // return null;
+        // return null;
     }
 }

@@ -5,6 +5,7 @@
  */
 package server.mbr.rest;
 
+import java.util.List;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Context;
@@ -17,7 +18,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PUT;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import server.mbr.entity.MBR;
 import server.mbr.entity.ProductPackSize;
 import server.mbr.facade.ProductPackSizeFacade;
 
@@ -48,9 +48,8 @@ public class ProductPackSizeREST {
      */
     @GET
     @Produces("application/json")
-    public String getJson() {
-        //TODO return proper representation object
-        throw new UnsupportedOperationException();
+    public List<ProductPackSize> findAll() {
+        return productPackSizeFacade.findAll();
     }
     
        @POST
